@@ -22,7 +22,7 @@ function varargout = laser_shuffle(varargin)
 
 % Edit the above text to modify the response to help laser_shuffle
 
-% Last Modified by GUIDE v2.5 03-Oct-2012 19:45:11
+% Last Modified by GUIDE v2.5 04-Oct-2012 22:14:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -109,9 +109,12 @@ function button_browse_data_dir_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
     c = handles.controller;
-    v = handles.view;
+    v = handles.view;    
     c = c.setDataDir(uigetdir());
-    v.setDataFiles(c.dataFiles, handles);
+    v.setDataFiles(c, handles);
+    
+    handles.controller = c;
+    guidata(hObject, handles);
 
 
 % --- Executes on selection change in listbox_valid_files.
@@ -150,6 +153,65 @@ function listbox_laser_name_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function listbox_laser_name_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox_laser_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_laser_name_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_laser_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_laser_name as text
+%        str2double(get(hObject,'String')) returns contents of edit_laser_name as a double
+    lname = get(hObject, 'String');
+    fprintf('lname=%s\n', lname);
+    c = handles.controller;
+    
+    filesWithCol = c.filesWithColumn(lname);
+    
+    if isempty(filesWithCol)
+        errordlg(sprintf('Laser name %s not found in any of the files!', lname));
+        return;        
+    end
+    %c = c.setLaserName(lname);
+    v = handles.view;
+    
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_laser_name_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_laser_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in listbox_cells.
+function listbox_cells_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_cells (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_cells contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_cells
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_cells_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_cells (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
