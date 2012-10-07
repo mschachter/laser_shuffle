@@ -58,7 +58,8 @@ handles.output = hObject;
     c = LaserShuffleController;
     handles.controller = c;
     v = LaserShuffleView;
-    handles.view = v;
+    v.setDefaults(c, handles);
+    handles.view = v;    
 
 % Update handles structure
 guidata(hObject, handles);

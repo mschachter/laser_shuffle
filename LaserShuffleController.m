@@ -20,12 +20,15 @@ classdef LaserShuffleController
         
         %initializer method
         function obj = LaserShuffleController(obj)
-           
+
             dparams = containers.Map();
-            dparams('bin_size') = 0.005;
-            dparams('
+            dparams('bin_size') = 5;
+            dparams('baseline_start') = -750;
+            dparams('baseline_end') = 250;
+            dparams('analysis_start') = 0;
+            dparams('analysis_end') = 100;
             
-            
+            obj.parameters = dparams;
             
         end
         
@@ -49,14 +52,14 @@ classdef LaserShuffleController
         function filesWithCol = filesWithColumn(obj, colName)
             
             filesWithCol = {};
-            for k = 1:length(obj.fileHeaders)                
+            for k = 1:length(obj.fileHeaders)
                 for j = 1:length(obj.fileHeaders{k})
                     %fprintf('comparing %s with %s\n', obj.fileHeaders{k}{j}, colName)
                     if strcmp(obj.fileHeaders{k}{j}, colName)                       
                         filesWithCol{end+1} = obj.dataFiles{k};                        
                     end
                 end
-            end            
+            end
         end
                
         %set the Laser name and find available cells
@@ -71,7 +74,7 @@ classdef LaserShuffleController
                 findex = obj.fileName2Index(fname);
                 fheaders = obj.fileHeaders{findex};
                 
-                cells = LaserShuffleController.getCellNames(fheaders, lname);                
+                cells = LaserShuffleController.getCellNames(fheaders, lname);
                 if ~isempty(cells)
                     cnames(fname) = cells;
                 end

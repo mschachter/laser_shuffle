@@ -42,8 +42,23 @@ classdef LaserShuffleView
         
         function obj = setDefaults(obj, controller, handles)
             
+            p = controller.parameters;
             
+            set(handles.edit_bin_size, 'Value', p('bin_size'));
+            set(handles.edit_bin_size, 'String', sprintf('%0.1f', p('bin_size')));
             
+            set(handles.edit_baseline_start, 'Value', p('baseline_start'));
+            set(handles.edit_baseline_start, 'String', sprintf('%0.1f', p('baseline_start')));
+            
+            set(handles.edit_baseline_end, 'Value', p('baseline_end'));
+            set(handles.edit_baseline_end, 'String', sprintf('%0.1f', p('baseline_end')));
+            
+            set(handles.edit_analysis_start, 'Value', p('analysis_start'));
+            set(handles.edit_analysis_start, 'String', sprintf('%0.1f', p('analysis_start')));
+            
+            set(handles.edit_analysis_end, 'Value', p('analysis_end'));
+            set(handles.edit_analysis_end, 'String', sprintf('%0.1f', p('analysis_end')));
+                                    
         end        
     end
     
