@@ -1,4 +1,4 @@
-function outVals = laserShuffleAnalysis(fullFileName, paramVals)
+function outVals = laserShuffleAnalysis(fullFileName, paramVals, selectedCellNames)
 
 
     preWindowSize = paramVals.preLaserWindow(2) - paramVals.preLaserWindow(1);
@@ -9,29 +9,19 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
 
     sdata = readLaserShuffleData(fullFileName, paramVals.laserColName);
    
-    numCells = length(sdata.sdata.cellNamess);    
-    allCellNums = 1:numCells;
-
-    % If user wants to select specific cell for analysis, do that here
-    if paramVals.selectCells
-        for cellNum = allCellNums
-            disp([num2str(cellNum), '  --  ', sdata.cellNames{cellNum}]);
+    % get cell columns for specified cell names
+    cellCol = [];
+    cellNames = {};
+    for k = 1:length(selectedCellNames)       
+        cname = selectedCellNames{k};
+        if sdata.cell2column.isKey(cname)
+            cellCol(end+1) = sdata.cell2column(cname);
+            cellNames{end+1} = cname;
         end
-        badCellNum = 1;
-        while badCellNum
-            selCellNum = input('Input cell number: ');
-            badCellNum = ~any(find(allCellNums == selCellNum));
-            if badCellNum
-                disp(['Bad cell number!']);
-            else
-                disp(['Reading cell: ', sdata.cellNames{selCellNum}]);
-            end 
-        end
-        allCellNums = selCellNum;
-        outVals.selCellNum = selCellNum;
-    else
-        outVals.selCellNum = -1;
     end
+        
+    numCells = length(cellCol);
+    allCellNums = 1:numCells;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %               MAKE THE FIGURE FOR PLOTTING THE DATA                     %
@@ -52,13 +42,12 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
 
     % Cycle through each cell in the data set
     for cellNum = allCellNums
-    %     disp(['Analyzing cell ', num2str(cellNum)]);
-
+    
         % Create empty arrays to hold PSTH and randomized/shifted PSTH values for this cell
         psthVals{cellNum} = [];
         psthShiftList{cellNum} = [];
 
-        laserPulseNums = 1:size(laserTimes, 1);
+        laserPulseNums = 1:size(sdata.laserTimes, 1);
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %            FIND AND SHUFFLE BASELINE SPIKE TRAINS                   %
@@ -69,22 +58,22 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
         for laserPulseNum = laserPulseNums
             % Find the spikes from this cell that fall into the pre-stim
             % window for this laser pulse
-            befSpikeNums{laserPulseNum} = find((allData.data(:, cellCol(cellNum)) > ...
-                (laserTimes(laserPulseNum) + paramVals.preLaserWindow(1))) & ...
-                (allData.data(:, cellCol(cellNum)) < ...
-                (laserTimes(laserPulseNum) + paramVals.preLaserWindow(2))));
+            befSpikeNums{laserPulseNum} = find((sdata.allData.data(:, cellCol(cellNum)) > ...
+                (sdata.laserTimes(laserPulseNum) + paramVals.preLaserWindow(1))) & ...
+                (sdata.allData.data(:, cellCol(cellNum)) < ...
+                (sdata.laserTimes(laserPulseNum) + paramVals.preLaserWindow(2))));
             % Find all spikes from this cell that fall into the PSTH window
             % for this laser pulse
-            nearPulseNums{laserPulseNum} = find((allData.data(:, cellCol(cellNum)) > ...
-                (laserTimes(laserPulseNum) + paramVals.psthWindow(1))) & ...
-                (allData.data(:, cellCol(cellNum)) < ...
-                (laserTimes(laserPulseNum) + paramVals.psthWindow(2))));
+            nearPulseNums{laserPulseNum} = find((sdata.allData.data(:, cellCol(cellNum)) > ...
+                (sdata.laserTimes(laserPulseNum) + paramVals.psthWindow(1))) & ...
+                (sdata.allData.data(:, cellCol(cellNum)) < ...
+                (sdata.laserTimes(laserPulseNum) + paramVals.psthWindow(2))));
             % If there are any spikes in the pre-stim window, then shuffle
             % them and add to the shuffled PSTH list
             if any(befSpikeNums{laserPulseNum})
                 % Make a list of pre-stim spike times relative to the laser pulse
-                subTimes = allData.data(befSpikeNums{laserPulseNum}, cellCol(cellNum)) - ...
-                    (laserTimes(laserPulseNum) + paramVals.preLaserWindow(1));
+                subTimes = sdata.allData.data(befSpikeNums{laserPulseNum}, cellCol(cellNum)) - ...
+                    (sdata.laserTimes(laserPulseNum) + paramVals.preLaserWindow(1));
                 % Replicate the list of pre-stim spikes according to the
                 % number of randomized shifts (paramVals.numRandShifts)
                 repSubTimes = (diag(subTimes) * eye(size(subTimes,2))) * ...
@@ -114,8 +103,8 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
                 addVals = laserPulseNum .* ones(size(nearPulseNums{laserPulseNum}, 1), 2);
                 % Then swap out second column of list to contain spike
                 % times relative to the paser pulse
-                addVals(:, 2) = allData.data(nearPulseNums{laserPulseNum}, ...
-                    cellCol(cellNum)) - laserTimes(laserPulseNum);
+                addVals(:, 2) = sdata.allData.data(nearPulseNums{laserPulseNum}, ...
+                    cellCol(cellNum)) - sdata.laserTimes(laserPulseNum);
                 % Add to the full list of PSTH vals
                 psthVals{cellNum} = cat(1, psthVals{cellNum}, addVals);
             end
@@ -158,8 +147,8 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %    SCORE BINS FROM LASER PULSE RELATIVE TO SHUFFLED BASELINE        %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        allDropPulseNums = randperm(size(laserTimes, 1));
-        dropPulsesPerFrac = ceil(size(laserTimes, 1) / paramVals.numDropFractions);
+        allDropPulseNums = randperm(size(sdata.laserTimes, 1));
+        dropPulsesPerFrac = ceil(size(sdata.laserTimes, 1) / paramVals.numDropFractions);
 
         % Do the scoring repeatedly by dropping a fraction of the laser pulses
         % and re-calculating the laser triggered histogram. This way a single
@@ -172,7 +161,7 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
                 lastPulse =  size(allDropPulseNums, 2);
             end
             dropPulses = allDropPulseNums(firstPulse:lastPulse);
-            scalePSTH = 1 + (size(dropPulses, 2) / size(laserTimes, 1));
+            scalePSTH = 1 + (size(dropPulses, 2) / size(sdata.laserTimes, 1));
 
             % Calculate the PSTH for this cell multiple times by dropping a
             % small fraction of pulses each time
@@ -268,14 +257,14 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
             cla(rasterAx);
         end
         title(rasterAx, ['Cell ', num2str(cellNum), ' of ', ...
-            num2str(numCells), ': ', sdata.cellNames{cellNum}], 'interpreter', 'none');
+            num2str(numCells), ': ', cellNames{cellNum}], 'interpreter', 'none');
         ylabel(rasterAx, 'Cell #');
 
         % Plot the PSTH and the histogram of shuffled PSTH values
         title(plotAx,['Max: ', num2str(laserMaxPercentile(1)), ...
             '; Min: ', num2str(laserMinPercentile(1))]);
         normPsthBarVals(cellNum, :) = psthBarVals(cellNum, :) ./ ...
-            (size(laserTimes, 1) * paramVals.psthBinSize);
+            (size(sdata.laserTimes, 1) * paramVals.psthBinSize);
         histHistSum = sum(shuffleHistHist(1:end));
         bar(paramVals.psthBins + (paramVals.psthBinSize / 2), ...
             normPsthBarVals(cellNum, :), ...
@@ -283,7 +272,7 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
         ylabel(psthAx, 'Rate (Hz)');
 
         % Plot histogram of shuffled PSTH bin values
-        bar(paramVals.histHistBins(1:end) ./ (size(laserTimes, 1) * paramVals.psthBinSize), ...
+        bar(paramVals.histHistBins(1:end) ./ (size(sdata.laserTimes, 1) * paramVals.psthBinSize), ...
             shuffleHistHist(1:end) ./ histHistSum, ...
             'edgecolor', 'k', 'facecolor', 'k', 'parent', plotAx);
         ylabel(plotAx, 'Frac. Bins')
@@ -295,7 +284,7 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
         ylabel('# Sig Bins');
 
         % Set the x limits of the histogram of PSTH values to reasonable limits
-        histHistMaxXLim = max([lastBin ./ (size(laserTimes, 1) * paramVals.psthBinSize), ...
+        histHistMaxXLim = max([lastBin ./ (size(sdata.laserTimes, 1) * paramVals.psthBinSize), ...
             normPsthBarVals(cellNum, paramVals.laserPSTHBins(1)), ...
             normPsthBarVals(cellNum, paramVals.laserPSTHBins(2))]);
     %     maxHistHistVal = (10 * floor(max(histHistMaxXLim) / 10)) + 10;
@@ -316,13 +305,13 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
                 find(paramVals.histHistBins >= psthBarVals(cellNum, hBinNum(hBinCt)), 1, 'first');
             plot([paramVals.histHistBins(histHistBinNum(hBinCt)), ...
                 paramVals.histHistBins(histHistBinNum(hBinCt))] ./ ...
-                (size(laserTimes, 1) * paramVals.psthBinSize), ...
+                (size(sdata.laserTimes, 1) * paramVals.psthBinSize), ...
                 histHistYLimVals, 'color', hColors(hBinCt,:), ...
                 'linewidth', 3, 'parent', plotAx);
         end
 
         maxHistHistVal = ceil(max(cat(2, histHistMaxXLim, ...
-            histHistBinNum ./  (size(laserTimes, 1) * paramVals.psthBinSize))));
+            histHistBinNum ./  (size(sdata.laserTimes, 1) * paramVals.psthBinSize))));
         xlim(plotAx,[0, maxHistHistVal]);
 
         drawnow;
@@ -333,7 +322,7 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals)
         outVals.laserMaxSigSum = sum(laserBinMaxSig, 1);
         outVals.laserMinSigSum = sum(laserBinMinSig, 1);
         outVals.numCells       = numCells;
-        outVals.sdata.cellNames{cellNum} = sdata.cellNames{cellNum};
+        outVals.cellNames{cellNum} = cellNames{cellNum};
         outVals.psthBarVals = psthBarVals;
         outVals.firstSigMaxBin = firstSigMaxBin;
 

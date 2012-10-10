@@ -20,31 +20,33 @@ function sdata = readLaserShuffleData(filePath, laserColumnName)
     laserTimes = laserTimes(~isnan(laserTimes));
     
     %% get cell names and indices
-    cell2index = struct;
+    cell2column = containers.Map();        
     for k = (laserCol+1):ncols        
         cname = allData.colheaders{k};
-        cell2index.(cname) = k;        
+        cell2column(cname) = k;                
     end    
     
     %% get cell data    
-    cellNames = fieldnames(cell2index);    
+    cellNames = cell2column.keys();
     cellSpikes = cell(length(cellNames), 1);
     for k = 1:length(cellNames)       
         cname = cellNames{k};
-        ccol = cell2index.(cname);        
+        ccol = cell2column(cname);        
         cdata = allData.data(:, ccol);
         cdata = cdata(~isnan(cdata));
         cellSpikes{k} = cdata;
     end
     
     %% clean up
-    clear allData;
+    %clear allData;
     
     %% build output structure
     sdata = struct;
     sdata.laser = laserColumnName;
     sdata.laserTimes = laserTimes;    
     sdata.cellNames = cellNames;
-    sdata.cellSpikes = cellSpikes;    
+    sdata.cellSpikes = cellSpikes;
+    sdata.allData = allData;
+    sdata.cell2column = cell2column;
         
 end

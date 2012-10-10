@@ -128,8 +128,15 @@ function listbox_valid_files_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_valid_files contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_valid_files
-
-
+    c = handles.controller;    
+    v = handles.view;
+    v = v.setAvailableCells(c, handles);
+    
+    %save changes to controller and view
+    handles.controller = c;
+    handles.view = v;
+    guidata(hObject, handles);
+   
 % --- Executes during object creation, after setting all properties.
 function listbox_valid_files_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox_valid_files (see GCBO)
@@ -175,7 +182,6 @@ function edit_laser_name_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit_laser_name as text
 %        str2double(get(hObject,'String')) returns contents of edit_laser_name as a double
     lname = get(hObject, 'String');
-    fprintf('lname=%s\n', lname);
     c = handles.controller;
     
     filesWithCol = c.filesWithColumn(lname);
@@ -187,7 +193,7 @@ function edit_laser_name_Callback(hObject, eventdata, handles)
     
     c = c.setLaserName(lname);
     v = handles.view;
-    v.setAvailableCells(c, handles);
+    v = v.setAvailableCells(c, handles);
     
     %save changes to controller and view
     handles.controller = c;
@@ -236,8 +242,12 @@ function button_run_analysis_Callback(hObject, eventdata, handles)
 % hObject    handle to button_run_analysis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
+    
+    c = handles.controller;
+    v = handles.view;
+    sfiles = v.getSelectedFiles(c, handles);    
+    cellsPerFile = v.getSelectedCellsPerFile(c, handles);
+    c = c.runAnalysis(sfiles, cellsPerFile);
 
 function edit_bin_size_Callback(hObject, eventdata, handles)
 % hObject    handle to edit_bin_size (see GCBO)

@@ -65,6 +65,7 @@ classdef LaserShuffleController
         %set the Laser name and find available cells
         function obj = setLaserName(obj, lname)
         
+            obj.laserName = lname;
             filesToSearch = obj.filesWithColumn(lname);
             
             cnames = containers.Map();
@@ -81,6 +82,39 @@ classdef LaserShuffleController
             end            
             
             obj.availableCells = cnames;
+            
+        end
+        
+        %run the laser shuffle analysis
+        function obj = runAnalysis(obj, selectedFiles, selectedCellsPerFile)
+            
+            paramVals.numRandShifts = 5000; % Number of times to shuffle spike times from each trial
+            paramVals.percentileCutOff = 0.995; % Cut-off for determining a specific bin is significant
+            paramVals.randShiftMultiplier = 1; % (sec) Determines the magnitude of time randomized time shift
+            paramVals.pauseDur = 0; % (sec) Duration to pause after each plot; 0=no pause; -1 = wait for user
+            paramVals.minSpikesPerSigBin = 3;% 0.005; % Discard cells that don't have enough spikes to judge analysis
+            paramVals.minSigBins = 3; % Minimum number of bins that must be significant in order to count cell
+            paramVals.histHistBins = 0:1:5000; % Set bin size and range for histogram of PSTH values
+            paramVals.numDropFractions = 50; % Number of times to recompute the score omitting a fraction of the pulses
+            paramVals.selectCells = 0; % 1=query user for filename & cell; 0=analyze all files & cells
+            paramVals.highlightBinTimes = [-0.1 0.005 0.015 0.1]; % Bin times to highligh on plots
+            
+            paramVals.selectCells = {};
+            paramVals.laserColName = obj.laserName;
+            paramVals.psthWindow = [-1 2];
+            paramVals.psthBinSize = obj.parameters('bin_size')*1e-3;
+            paramVals.preLaserWindow = [obj.parameters('baseline_start') obj.parameters('baseline_end')]*1e-3;
+            paramVals.laserPulseWindow = [obj.parameters('analysis_start') obj.parameters('analysis_end')]*1e-3;
+            
+            paramVals.psthBins = paramVals.psthWindow(1):paramVals.psthBinSize:paramVals.psthWindow(2);
+            paramVals.laserPSTHBins = find(paramVals.psthBins >= paramVals.laserPulseWindow(1) & paramVals.psthBins < paramVals.laserPulseWindow(2));
+            paramVals.laserPSTHBins = (paramVals.laserPSTHBins(1)-1):paramVals.laserPSTHBins(end);
+
+            for k = 1:length(selectedFiles)               
+                selectedCells = selectedCellsPerFile{k};
+                fullFileName = fullfile(obj.dataDir, selectedFiles{k});                
+                laserShuffleAnalysis(fullFileName, paramVals, selectedCells);
+            end
             
         end
         
