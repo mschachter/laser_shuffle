@@ -27,6 +27,7 @@ classdef LaserShuffleController
             dparams('baseline_end') = 250;
             dparams('analysis_start') = 0;
             dparams('analysis_end') = 100;
+            dparams('pause_between') = 1;
             
             obj.parameters = dparams;
             
@@ -99,6 +100,8 @@ classdef LaserShuffleController
             paramVals.selectCells = 0; % 1=query user for filename & cell; 0=analyze all files & cells
             paramVals.highlightBinTimes = [-0.1 0.005 0.015 0.1]; % Bin times to highligh on plots
             
+            
+            paramVals.pauseDur = obj.parameters('pause_between');
             paramVals.selectCells = {};
             paramVals.laserColName = obj.laserName;
             paramVals.psthWindow = [-1 2];
@@ -116,8 +119,7 @@ classdef LaserShuffleController
                 laserShuffleAnalysis(fullFileName, paramVals, selectedCells);
             end
             
-        end
-        
+        end        
         
     end
     

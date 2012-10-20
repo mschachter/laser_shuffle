@@ -43,6 +43,9 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals, selectedCellNam
     % Cycle through each cell in the data set
     for cellNum = allCellNums
     
+        watchon;
+        display(sprintf('Processing cell %s...', cellNames{cellNum}));
+        
         % Create empty arrays to hold PSTH and randomized/shifted PSTH values for this cell
         psthVals{cellNum} = [];
         psthShiftList{cellNum} = [];
@@ -327,10 +330,10 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals, selectedCellNam
         outVals.firstSigMaxBin = firstSigMaxBin;
 
         % Pause to wait for user
-        if paramVals.pauseDur == -1
-            pause;
-        elseif paramVals.pauseDur > 0
-            pause(paramVals.pauseDur);
+        if paramVals.pauseDur > 0
+            watchoff;
+            display('Click the figure and hit any key to continue to the next cell.');
+            pause;                    
         end
     end
 

@@ -56,8 +56,9 @@ classdef LaserShuffleView
             cnames = get(handles.listbox_cells, 'String');
             
             for k = 1:length(selIndices)
-                cName = cnames{k};
-                cFile = obj.cellFiles{k};
+                selIndex = selIndices(k);
+                cName = cnames{selIndex};
+                cFile = obj.cellFiles{selIndex};
                 if ~fileMap.isKey(cFile)
                     fileMap(cFile) = {};
                 end

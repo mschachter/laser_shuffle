@@ -22,7 +22,7 @@ function varargout = laser_shuffle(varargin)
 
 % Edit the above text to modify the response to help laser_shuffle
 
-% Last Modified by GUIDE v2.5 06-Oct-2012 13:24:34
+% Last Modified by GUIDE v2.5 20-Oct-2012 12:38:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -111,7 +111,11 @@ function button_browse_data_dir_Callback(hObject, eventdata, handles)
 
     c = handles.controller;
     v = handles.view;    
-    c = c.setDataDir(uigetdir());
+    ddir = uigetdir();
+    if ddir == 0
+        return;
+    end
+    c = c.setDataDir(ddir);
     v.setDataFiles(c, handles);
     
     %save changes to controller and view
@@ -361,3 +365,19 @@ function edit_analysis_end_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox_pause_between_figures.
+function checkbox_pause_between_figures_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_pause_between_figures (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_pause_between_figures
+
+    val = get(hObject, 'Value');
+    c = handles.controller;    
+    c.parameters('pause_between') = val;
+    handles.controller = c;
+    guidata(hObject, handles);
+    
