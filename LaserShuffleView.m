@@ -23,7 +23,29 @@ classdef LaserShuffleView
             end            
         end
         
+        function obj = selectAllCells(obj, controller, handles)
+            
+            svals = get(handles.listbox_cells, 'String');
+            if ~isempty(svals)
+                svals_index = 1:length(svals);
+                set(handles.listbox_cells, 'Value', svals_index);
+            end
+        end
+        
+        function obj = selectAllFiles(obj, controller, handles)
+            
+            svals = get(handles.listbox_valid_files, 'String');
+            if ~isempty(svals)
+                svals_index = 1:length(svals);
+                set(handles.listbox_valid_files, 'Value', svals_index);
+            end
+        end
+        
         function obj = setAvailableCells(obj, controller, handles)
+            
+            if isempty(controller.availableCells)
+                return;
+            end
             
             sfiles = obj.getSelectedFiles(controller, handles);
             
@@ -32,7 +54,7 @@ classdef LaserShuffleView
             allCells = {};            
             cfiles = {};
             for k = 1:length(sfiles)
-                fkey = sfiles{k};
+                fkey = sfiles{k};                
                 if controller.availableCells.isKey(fkey)
                     clist = controller.availableCells(fkey);
                     for j = 1:length(clist)                       

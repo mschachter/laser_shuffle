@@ -89,7 +89,7 @@ classdef LaserShuffleController
         %run the laser shuffle analysis
         function obj = runAnalysis(obj, selectedFiles, selectedCellsPerFile)
             
-            paramVals.numRandShifts = 5000; % Number of times to shuffle spike times from each trial
+            paramVals.numRandShifts = 500; % Number of times to shuffle spike times from each trial
             paramVals.percentileCutOff = 0.995; % Cut-off for determining a specific bin is significant
             paramVals.randShiftMultiplier = 1; % (sec) Determines the magnitude of time randomized time shift
             paramVals.pauseDur = 0; % (sec) Duration to pause after each plot; 0=no pause; -1 = wait for user

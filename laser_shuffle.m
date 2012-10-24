@@ -22,7 +22,7 @@ function varargout = laser_shuffle(varargin)
 
 % Edit the above text to modify the response to help laser_shuffle
 
-% Last Modified by GUIDE v2.5 20-Oct-2012 12:38:46
+% Last Modified by GUIDE v2.5 23-Oct-2012 19:31:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -379,5 +379,30 @@ function checkbox_pause_between_figures_Callback(hObject, eventdata, handles)
     c = handles.controller;    
     c.parameters('pause_between') = val;
     handles.controller = c;
+    guidata(hObject, handles);
+    
+
+
+% --- Executes on button press in button_select_all.
+function button_select_all_Callback(hObject, eventdata, handles)
+% hObject    handle to button_select_all (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    c = handles.controller;
+    v = handles.view;
+    v.selectAllCells(c, handles);
+    
+
+
+% --- Executes on button press in button_select_all_files.
+function button_select_all_files_Callback(hObject, eventdata, handles)
+% hObject    handle to button_select_all_files (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    c = handles.controller;
+    v = handles.view;
+    v.selectAllFiles(c, handles);
+    v = v.setAvailableCells(c, handles);
+    handles.view = v;
     guidata(hObject, handles);
     
