@@ -22,7 +22,7 @@ function varargout = laser_shuffle(varargin)
 
 % Edit the above text to modify the response to help laser_shuffle
 
-% Last Modified by GUIDE v2.5 23-Oct-2012 19:31:21
+% Last Modified by GUIDE v2.5 23-Oct-2012 21:12:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -118,6 +118,14 @@ function button_browse_data_dir_Callback(hObject, eventdata, handles)
     c = c.setDataDir(ddir);
     v.setDataFiles(c, handles);
     
+    lname = get(handles.edit_laser_name, 'String');
+    if ~isempty(lname)
+        c = c.setLaserName(lname);
+        if ~isempty(c.laserName)
+            v = v.setAvailableCells(c, handles);
+        end
+    end
+    
     %save changes to controller and view
     handles.controller = c;
     handles.view = v;
@@ -188,14 +196,10 @@ function edit_laser_name_Callback(hObject, eventdata, handles)
     lname = get(hObject, 'String');
     c = handles.controller;
     
-    filesWithCol = c.filesWithColumn(lname);
-    
-    if isempty(filesWithCol)
-        errordlg(sprintf('Laser name %s not found in any of the files!', lname));
-        return;        
-    end
-    
     c = c.setLaserName(lname);
+    if isempty(c.laserName)
+        return
+    end
     v = handles.view;
     v = v.setAvailableCells(c, handles);
     
@@ -406,3 +410,26 @@ function button_select_all_files_Callback(hObject, eventdata, handles)
     handles.view = v;
     guidata(hObject, handles);
     
+
+
+
+function edit_sig_latency_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_sig_latency (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_sig_latency as text
+%        str2double(get(hObject,'String')) returns contents of edit_sig_latency as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_sig_latency_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_sig_latency (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -100,6 +100,8 @@ classdef LaserShuffleView
             
             p = controller.parameters;
             
+            set(handles.edit_laser_name, 'String', p('laser_name'));
+            
             set(handles.edit_bin_size, 'Value', p('bin_size'));
             set(handles.edit_bin_size, 'String', sprintf('%0.1f', p('bin_size')));
             
@@ -114,6 +116,9 @@ classdef LaserShuffleView
             
             set(handles.edit_analysis_end, 'Value', p('analysis_end'));
             set(handles.edit_analysis_end, 'String', sprintf('%0.1f', p('analysis_end')));
+            
+            set(handles.edit_sig_latency, 'Value', p('sig_latency'));
+            set(handles.edit_sig_latency, 'String', sprintf('%0.1f', p('sig_latency')));
                                     
         end        
     end

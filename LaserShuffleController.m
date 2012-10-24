@@ -22,12 +22,14 @@ classdef LaserShuffleController
         function obj = LaserShuffleController(obj)
 
             dparams = containers.Map();
+            dparams('laser_name') = 'Laser_1';
             dparams('bin_size') = 5;
             dparams('baseline_start') = -750;
             dparams('baseline_end') = 250;
             dparams('analysis_start') = 0;
             dparams('analysis_end') = 100;
-            dparams('pause_between') = 1;
+            dparams('pause_between') = 0;
+            dparams('sig_latency') = 15;
             
             obj.parameters = dparams;
             
@@ -66,6 +68,14 @@ classdef LaserShuffleController
         %set the Laser name and find available cells
         function obj = setLaserName(obj, lname)
         
+            filesWithCol = obj.filesWithColumn(lname);
+    
+            if isempty(filesWithCol)
+                errordlg(sprintf('Laser name %s not found in any of the files!', lname));
+                obj.laserName = '';
+                return;        
+            end
+            
             obj.laserName = lname;
             filesToSearch = obj.filesWithColumn(lname);
             
@@ -99,8 +109,7 @@ classdef LaserShuffleController
             paramVals.numDropFractions = 50; % Number of times to recompute the score omitting a fraction of the pulses
             paramVals.selectCells = 0; % 1=query user for filename & cell; 0=analyze all files & cells
             paramVals.highlightBinTimes = [-0.1 0.005 0.015 0.1]; % Bin times to highligh on plots
-            
-            
+                        
             paramVals.pauseDur = obj.parameters('pause_between');
             paramVals.selectCells = {};
             paramVals.laserColName = obj.laserName;
@@ -113,13 +122,60 @@ classdef LaserShuffleController
             paramVals.laserPSTHBins = find(paramVals.psthBins >= paramVals.laserPulseWindow(1) & paramVals.psthBins < paramVals.laserPulseWindow(2));
             paramVals.laserPSTHBins = (paramVals.laserPSTHBins(1)-1):paramVals.laserPSTHBins(end);
 
+            allOutVals = {};
             for k = 1:length(selectedFiles)               
                 selectedCells = selectedCellsPerFile{k};
                 fullFileName = fullfile(obj.dataDir, selectedFiles{k});                
-                laserShuffleAnalysis(fullFileName, paramVals, selectedCells);
+                outVals = laserShuffleAnalysis(fullFileName, paramVals, selectedCells);
+                allOutVals{end+1} = outVals;
             end
             
-        end        
+            %write the output values to a file
+            outDir = fullfile(obj.dataDir, 'output');
+            if ~exist(outDir, 'dir')
+                %try to make output directory
+                [success, msg, msgid] = mkdir(outDir);
+                if ~success
+                    errdlg(sprintf('Could not create output directory at %s, defaulting to %s', ...
+                           outDir, obj.dataDir));
+                    outDir = obj.dataDir;
+                end
+            end
+            
+            d = datestr(clock());
+            d = strrep(d, ' ', '_');
+            d = strrep(d, ':', '.');
+            fileName = sprintf('output_%s.csv', d);
+            outFile = fullfile(outDir, fileName);            
+            f = fopen(outFile, 'w');
+            
+            %write parameter values
+            fprintf(f, 'Laser,BinSize,BaselineStart,BaselineEnd,AnalysisStart,AnalysisEnd,SigLatency\n');
+            fprintf(f, '%s,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f,%0.3f\n', obj.laserName, obj.parameters('bin_size'), ...
+                    obj.parameters('baseline_start'), obj.parameters('baseline_end'), ...
+                    obj.parameters('analysis_start'), obj.parameters('analysis_end'), ...
+                    obj.parameters('sig_latency'));
+            fprintf(f, '\n');
+            
+            %write output value headers
+            fprintf(f, 'FileName,CellName,FirstSigBin,LaserModulated\n');
+            
+            %write output values
+            for k = 1:length(allOutVals)
+                outVals = allOutVals{k};                
+                for j = 1:outVals.numCells
+                    fsmb = outVals.firstSigMaxBin(j);
+                    isSignificant = (fsmb > 0) & (fsmb <= (obj.parameters('sig_latency')*1e-3 + 1e-3));
+                    
+                    fprintf(f, '%s,%s,%0.3f,%d\n', ...
+                            selectedFiles{k}, outVals.cellNames{j}, ...
+                            fsmb, isSignificant);                    
+                end                
+            end            
+            fclose(f);
+            display(sprintf('Wrote output file to %s', outFile));
+            
+        end
         
     end
     
@@ -170,7 +226,7 @@ classdef LaserShuffleController
             end            
             fclose(f);
         end
-                        
+
     end
     
 end

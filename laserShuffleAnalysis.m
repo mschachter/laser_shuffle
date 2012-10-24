@@ -336,5 +336,6 @@ function outVals = laserShuffleAnalysis(fullFileName, paramVals, selectedCellNam
             pause;                    
         end
     end
+    watchoff;
 
 end
