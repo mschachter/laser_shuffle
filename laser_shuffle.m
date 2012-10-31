@@ -265,6 +265,13 @@ function edit_bin_size_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit_bin_size as text
 %        str2double(get(hObject,'String')) returns contents of edit_bin_size as a double
 
+    bin_size = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('bin_size') = str2double(bin_size);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
+
 
 % --- Executes during object creation, after setting all properties.
 function edit_bin_size_CreateFcn(hObject, eventdata, handles)
@@ -288,6 +295,12 @@ function edit_baseline_start_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit_baseline_start as text
 %        str2double(get(hObject,'String')) returns contents of edit_baseline_start as a double
 
+    bs_start = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('baseline_start') = str2double(bs_start);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function edit_baseline_start_CreateFcn(hObject, eventdata, handles)
@@ -310,6 +323,12 @@ function edit_baseline_end_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_baseline_end as text
 %        str2double(get(hObject,'String')) returns contents of edit_baseline_end as a double
+    bs_end = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('baseline_end') = str2double(bs_end);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -333,6 +352,12 @@ function edit_analysis_start_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_analysis_start as text
 %        str2double(get(hObject,'String')) returns contents of edit_analysis_start as a double
+    a_start = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('analysis_start') = str2double(a_start);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -356,7 +381,12 @@ function edit_analysis_end_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_analysis_end as text
 %        str2double(get(hObject,'String')) returns contents of edit_analysis_end as a double
-
+    a_end = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('analysis_end') = str2double(a_end);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function edit_analysis_end_CreateFcn(hObject, eventdata, handles)
@@ -420,6 +450,12 @@ function edit_sig_latency_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_sig_latency as text
 %        str2double(get(hObject,'String')) returns contents of edit_sig_latency as a double
+    sig_lat = get(hObject, 'String');
+    c = handles.controller;    
+    c.parameters('sig_latency') = str2double(sig_lat);
+    %save changes to controller and view
+    handles.controller = c;    
+    guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
